@@ -15,6 +15,32 @@ DEFINES += QT_DEPRECATED_WARNINGS
 # You can also select to disable deprecated APIs only up to a certain version of Qt.
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
+########
+SOURCE_DIR = $$PWD\\third_party\\ffmpeg\\bin\\*
+DEST_DIR = ""
+SOURCE_DIR = $$replace(SOURCE_DIR, '/', '\\')
+
+CONFIG(debug, debug|release) {
+    DEST_DIR = $$OUT_PWD\\debug\\
+} else {
+    DEST_DIR += $$OUT_PWD\\release\\
+}
+
+DEST_DIR = $$replace(DEST_DIR, '/', '\\')
+
+message($$SOURCE_DIR)
+message($$DEST_DIR)
+unix {
+    QMAKE_POST_LINK += cp -r $$SOURCE_DIR $$DESTDIR
+}
+win32 {
+    QMAKE_POST_LINK = xcopy $$SOURCE_DIR $$DEST_DIR /E /I /Y
+}
+
+INCLUDEPATH += $$PWD/third_party/ffmpeg/include
+
+LIBS += -L$$PWD/third_party/ffmpeg/lib -lswresample -lswscale -lavcodec -lavformat -lavutil -lavdevice -lavfilter
+
 SOURCES += \
     main.cpp \
     mainwindow.cpp
