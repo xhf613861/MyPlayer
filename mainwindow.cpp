@@ -10,6 +10,8 @@ extern "C" {
 #include <libswscale/swscale.h>
 }
 
+#include "play_thread.h"
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
     , ui(new Ui::MainWindow)
@@ -29,3 +31,9 @@ MainWindow::~MainWindow()
     delete ui;
 }
 
+
+void MainWindow::on_pushButton_clicked()
+{
+    PlayThread *play = new PlayThread(this);
+    play->start();
+}
