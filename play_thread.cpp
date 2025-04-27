@@ -10,6 +10,10 @@
         goto end; \
     }
 
+#define FILE_NAME "D:\\3.yuv"
+#define PIXEL_FORMAT SDL_PIXELFORMAT_IYUV
+#define IMG_W 1920
+#define IMG_H 1080
 
 PlayThread::PlayThread(QObject *parent) : QThread(parent)
 {
@@ -57,6 +61,7 @@ void PlayThread::showClick(SDL_Renderer *renderer, const SDL_Event &event, SDL_T
     SDL_MouseButtonEvent btn = event.button;
     int x = btn.x;
     int y = btn.y;
+    SDL_RenderClear(renderer);
     SDL_Rect dstRect = {x, y, 50, 50};
     SDL_RenderCopy(renderer, texture, nullptr, &dstRect);
     SDL_RenderPresent(renderer);
@@ -73,18 +78,18 @@ void PlayThread::run()
     // 纹理（直接跟特定驱动程序相关的像素数据）
     SDL_Texture *texture = nullptr;
 
-    SDL_Rect dstRect = {100, 100, 50, 50};
+    QFile file(FILE_NAME);
 
 
     END(SDL_Init(SDL_INIT_VIDEO), SDL_Init);
 
 
     window = SDL_CreateWindow(
-                QStringLiteral("SDL修改渲染目标").toStdString().c_str(),
+                QStringLiteral("SDL修改渲染YUV").toStdString().c_str(),
                 SDL_WINDOWPOS_UNDEFINED,
                 SDL_WINDOWPOS_UNDEFINED,
-                500,
-                500,
+                IMG_W / 2,
+                IMG_H / 2,
                 SDL_WINDOW_SHOWN
                 );
     END(!window, SDL_CreateWindow);
@@ -96,8 +101,19 @@ void PlayThread::run()
     }
     END(!renderer, SDL_CreateRenderer);
 
-    texture = createTexture(renderer);
-    END(!texture, createTexture);
+    texture = SDL_CreateTexture(renderer,
+                                PIXEL_FORMAT,
+                                SDL_TEXTUREACCESS_STREAMING,
+                                IMG_W, IMG_H);
+    END(!texture, SDL_CreateTexture);
+
+    // 将YUV的像素数据填充
+    if (!file.open(QFile::ReadOnly)) {
+        qDebug() << "open error";
+        goto end;
+    }
+
+    END(SDL_UpdateTexture(texture, nullptr, file.readAll().data(), IMG_W), SDL_UpdateTexture);
 
     END(SDL_SetRenderTarget(renderer, nullptr), SDL_SetRenderTarget);
 
@@ -107,7 +123,7 @@ void PlayThread::run()
     // 用绘制颜色（画笔颜色）清除目标
     END(SDL_RenderClear(renderer), SDL_RenderClear);
 
-    END(SDL_RenderCopy(renderer, texture, nullptr, &dstRect), SDL_RenderCopy);
+    END(SDL_RenderCopy(renderer, texture, nullptr, nullptr), SDL_RenderCopy);
 
     SDL_RenderPresent(renderer);
 
@@ -120,15 +136,11 @@ void PlayThread::run()
             goto end;
             break;
         }
-        case SDL_MOUSEBUTTONUP: {
-            showClick(renderer, event, texture);
-            break;
-        }
-
         }
     }
 
 end:
+    file.close();
     SDL_DestroyTexture(texture);
     SDL_DestroyRenderer(renderer);
     SDL_DestroyWindow(window);
