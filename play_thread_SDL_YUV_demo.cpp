@@ -15,7 +15,7 @@
 #define IMG_W 1920
 #define IMG_H 1080
 
-PlayThread::PlayThread(void *winID, QObject *parent) : QThread(parent), m_winID(winID)
+PlayThread::PlayThread(QObject *parent) : QThread(parent)
 {
     connect(this, &PlayThread::finished, this, &PlayThread::deleteLater);
 }
@@ -82,7 +82,16 @@ void PlayThread::run()
 
 
     END(SDL_Init(SDL_INIT_VIDEO), SDL_Init);
-    window = SDL_CreateWindowFrom(m_winID);
+
+
+    window = SDL_CreateWindow(
+                QStringLiteral("SDL修改渲染YUV").toStdString().c_str(),
+                SDL_WINDOWPOS_UNDEFINED,
+                SDL_WINDOWPOS_UNDEFINED,
+                IMG_W / 2,
+                IMG_H / 2,
+                SDL_WINDOW_SHOWN
+                );
     END(!window, SDL_CreateWindow);
 
     renderer = SDL_CreateRenderer(window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);

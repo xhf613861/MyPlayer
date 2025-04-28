@@ -1,7 +1,8 @@
-#ifndef MAINWINDOW_H
+﻿#ifndef MAINWINDOW_H
 #define MAINWINDOW_H
 
 #include <QMainWindow>
+#include "yuv_player.h"
 
 QT_BEGIN_NAMESPACE
 namespace Ui { class MainWindow; }
@@ -15,10 +16,15 @@ public:
     MainWindow(QWidget *parent = nullptr);
     ~MainWindow();
 
+
+
 private slots:
     void on_pushButton_clicked();
 
+    void on_stopButton_clicked();
+
 private:
     Ui::MainWindow *ui;
+    YuvPlayer *m_player = nullptr;
 };
 #endif // MAINWINDOW_H

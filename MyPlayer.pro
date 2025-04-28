@@ -53,11 +53,13 @@ LIBS += -L$$SDL_SOURCE_DIR -lSDL2
 SOURCES += \
     main.cpp \
     mainwindow.cpp \
-    play_thread.cpp
+    play_thread.cpp \
+    yuv_player.cpp
 
 HEADERS += \
     mainwindow.h \
-    play_thread.h
+    play_thread.h \
+    yuv_player.h
 
 FORMS += \
     mainwindow.ui

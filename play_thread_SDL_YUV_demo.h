@@ -8,7 +8,7 @@ class PlayThread : public QThread
 {
     Q_OBJECT
 public:
-    explicit PlayThread(void *winID, QObject *parent = nullptr);
+    explicit PlayThread(QObject *parent = nullptr);
     ~PlayThread();
 
 signals:
@@ -21,9 +21,6 @@ protected:
 private:
     SDL_Texture *createTexture(SDL_Renderer *renderer);
     void showClick(SDL_Renderer *renderer, const SDL_Event &event, SDL_Texture *texture);
-
-private:
-    void *m_winID = nullptr;
 };
 
 #endif // PLAYTHREAD_H
