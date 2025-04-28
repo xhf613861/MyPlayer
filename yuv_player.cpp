@@ -50,21 +50,33 @@ void YuvPlayer::play()
         killTimer(m_timerid);
     }
     m_timerid = startTimer(1000 / 30);
+    m_state = Playing;
 }
 
 void YuvPlayer::pause()
 {
-
+    if (m_timerid) {
+        killTimer(m_timerid);
+    }
+    m_state = Paused;
 }
 
 void YuvPlayer::stop()
 {
-
+    if (m_timerid) {
+        killTimer(m_timerid);
+    }
+    m_state = Stopped;
 }
 
 bool YuvPlayer::isPlaying()
 {
-    return false;
+    return m_state == Playing;
+}
+
+YuvPlayer::State YuvPlayer::getState()
+{
+    return m_state;
 }
 
 void YuvPlayer::setYuv(const Yuv &yuv)
@@ -87,7 +99,7 @@ void YuvPlayer::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
 
-    int imgSize = m_yuv.width * m_yuv.height * 1.5;
+    int imgSize = av_image_get_buffer_size(m_yuv.pixelFormat, m_yuv.width, m_yuv.height, 1);
     char *data = (char *)malloc(imgSize);
     if (m_file.read(data, imgSize) > 0) {
         RET(SDL_UpdateTexture(m_texture, nullptr, data, m_yuv.width), SDL_UpdateTexture);
@@ -106,4 +118,5 @@ void YuvPlayer::timerEvent(QTimerEvent *event)
     } else {
         killTimer(m_timerid);
     }
+    delete data;
 }

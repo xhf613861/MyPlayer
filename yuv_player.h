@@ -9,6 +9,7 @@ extern "C" {
 #include <libavformat/avformat.h>
 #include <libavcodec/avcodec.h>
 #include <libswscale/swscale.h>
+#include <libavutil/imgutils.h>
 }
 
 typedef struct {
@@ -23,6 +24,13 @@ class YuvPlayer : public QWidget
 {
     Q_OBJECT
 public:
+    typedef enum {
+        Stopped = 0,
+        Playing,
+        Paused,
+        Finished
+    } State;
+
     explicit YuvPlayer(QWidget *parent = nullptr);
     ~YuvPlayer();
 
@@ -30,6 +38,7 @@ public:
     void pause();
     void stop();
     bool isPlaying();
+    State getState();
 
     void setYuv(const Yuv &yuv);
 protected:
@@ -44,6 +53,9 @@ private:
     SDL_Renderer *m_renderer = nullptr;
     SDL_Texture *m_texture = nullptr;
     QFile m_file;
+    State m_state = Stopped;
+
+
 };
 
 #endif // YUVPLAYER_H
