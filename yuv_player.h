@@ -4,6 +4,7 @@
 #include <QWidget>
 #include <SDL.h>
 #include <QFile>
+#include <QImage>
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -43,19 +44,19 @@ public:
     void setYuv(const Yuv &yuv);
 protected:
     void timerEvent(QTimerEvent *event);
+    void paintEvent(QPaintEvent *event);
 
 signals:
 
 private:
+    void freeCurrentImage();
+
+private:
     Yuv m_yuv;
     int m_timerid = 0;
-    SDL_Window *m_window = nullptr;
-    SDL_Renderer *m_renderer = nullptr;
-    SDL_Texture *m_texture = nullptr;
     QFile m_file;
     State m_state = Stopped;
-
-
+    QImage *m_currentImage = nullptr;
 };
 
 #endif // YUVPLAYER_H

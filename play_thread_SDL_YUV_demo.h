@@ -1,15 +1,15 @@
-﻿#ifndef PLAYTHREAD_H
-#define PLAYTHREAD_H
+﻿#ifndef SDLYUVPLAYTHREAD_H
+#define SDLYUVPLAYTHREAD_H
 
 #include <QThread>
 #include <SDL.h>
 
-class PlayThread : public QThread
+class SDLYUVPlayThread : public QThread
 {
     Q_OBJECT
 public:
-    explicit PlayThread(QObject *parent = nullptr);
-    ~PlayThread();
+    explicit SDLYUVPlayThread(QObject *parent = nullptr);
+    ~SDLYUVPlayThread();
 
 signals:
 
@@ -23,4 +23,4 @@ private:
     void showClick(SDL_Renderer *renderer, const SDL_Event &event, SDL_Texture *texture);
 };
 
-#endif // PLAYTHREAD_H
+#endif // SDLYUVPLAYTHREAD_H

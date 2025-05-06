@@ -3,6 +3,8 @@
 #include <QDebug>
 
 #include <SDL.h>
+#include "play_thread.h"
+#include "play_thread_SDL_YUV_demo.h"
 
 extern "C" {
 #include <libavformat/avformat.h>
@@ -23,8 +25,8 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     m_player = new YuvPlayer(this);
-    int w = 600;
-    int h = 600;
+    int w = 200;
+    int h = 200;
     int x = (width() - w) >> 1;
     int y = (height() - h) >> 1;
     m_player->setGeometry(x, y, w, h);
@@ -48,6 +50,8 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_pushButton_clicked()
 {
+//    SDLYUVPlayThread *play = new SDLYUVPlayThread();
+//    play->start();
     if (m_player->isPlaying()) {
         m_player->pause();
         ui->pushButton->setText(QStringLiteral("播放"));

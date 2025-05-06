@@ -1,4 +1,4 @@
-﻿#include "play_thread.h"
+﻿#include "play_thread_SDL_YUV_demo.h"
 
 #include <SDL.h>
 #include <QDebug>
@@ -15,21 +15,24 @@
 #define IMG_W 1920
 #define IMG_H 1080
 
-PlayThread::PlayThread(QObject *parent) : QThread(parent)
+SDLYUVPlayThread::SDLYUVPlayThread(QObject *parent) : QThread(parent)
 {
-    connect(this, &PlayThread::finished, this, &PlayThread::deleteLater);
+    connect(this, &SDLYUVPlayThread::finished, this, [this](){
+        qDebug() << this << QStringLiteral("完成了");
+        this->deleteLater();
+    });
 }
 
-PlayThread::~PlayThread()
+SDLYUVPlayThread::~SDLYUVPlayThread()
 {
     disconnect();
     requestInterruption();
     quit();
     wait();
-    qDebug() << this << "析构了";
+    qDebug() << this << QStringLiteral("析构了");
 }
 
-SDL_Texture *PlayThread::createTexture(SDL_Renderer *renderer)
+SDL_Texture *SDLYUVPlayThread::createTexture(SDL_Renderer *renderer)
 {
     SDL_Texture *texture = SDL_CreateTexture(renderer,
                       SDL_PIXELFORMAT_ARGB32,
@@ -56,7 +59,7 @@ SDL_Texture *PlayThread::createTexture(SDL_Renderer *renderer)
     return texture;
 }
 
-void PlayThread::showClick(SDL_Renderer *renderer, const SDL_Event &event, SDL_Texture *texture)
+void SDLYUVPlayThread::showClick(SDL_Renderer *renderer, const SDL_Event &event, SDL_Texture *texture)
 {
     SDL_MouseButtonEvent btn = event.button;
     int x = btn.x;
@@ -67,7 +70,7 @@ void PlayThread::showClick(SDL_Renderer *renderer, const SDL_Event &event, SDL_T
     SDL_RenderPresent(renderer);
 }
 
-void PlayThread::run()
+void SDLYUVPlayThread::run()
 {
     // 窗口
     SDL_Window *window = nullptr;

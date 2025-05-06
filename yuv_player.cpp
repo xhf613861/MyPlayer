@@ -1,6 +1,8 @@
 ﻿#include "yuv_player.h"
 #include <QDebug>
 #include <map>
+#include <QPainter>
+#include "ffmpegs.h"
 
 #define RET(judge, func) \
     if (judge) { \
@@ -18,37 +20,21 @@ static std::map<AVPixelFormat, SDL_PixelFormatEnum> PIXEL_FORMAT_MAP;/* = {
 
 YuvPlayer::YuvPlayer(QWidget *parent) : QWidget(parent)
 {
-    if (PIXEL_FORMAT_MAP.size() == 0) {
-        PIXEL_FORMAT_MAP[AV_PIX_FMT_YUV420P] = SDL_PIXELFORMAT_IYUV;
-        PIXEL_FORMAT_MAP[AV_PIX_FMT_YUYV422] = SDL_PIXELFORMAT_YUY2;
-        PIXEL_FORMAT_MAP[AV_PIX_FMT_NONE] = SDL_PIXELFORMAT_UNKNOWN;
-    }
-
-    m_window = SDL_CreateWindowFrom((void *)(winId()));
-    RET(!m_window, SDL_CreateWindow);
-
-    m_renderer = SDL_CreateRenderer(m_window, -1, SDL_RENDERER_ACCELERATED | SDL_RENDERER_PRESENTVSYNC);
-    if (!m_renderer) {
-        qDebug() << "不支持硬件加速";
-        m_renderer = SDL_CreateRenderer(m_window, -1, 0);
-    }
-    RET(!m_renderer, SDL_CreateRenderer);
+    setAttribute(Qt::WA_StyledBackground);
+    setStyleSheet("background: black");
+    PIXEL_FORMAT_MAP[AV_PIX_FMT_YUV420P] = SDL_PIXELFORMAT_IYUV;
+    PIXEL_FORMAT_MAP[AV_PIX_FMT_YUYV422] = SDL_PIXELFORMAT_YUY2;
+    PIXEL_FORMAT_MAP[AV_PIX_FMT_NONE] = SDL_PIXELFORMAT_UNKNOWN;
 }
 
 YuvPlayer::~YuvPlayer()
 {
     m_file.close();
-    SDL_DestroyTexture(m_texture);
-    SDL_DestroyRenderer(m_renderer);
-    SDL_DestroyWindow(m_window);
-    SDL_Quit();
+    freeCurrentImage();
 }
 
 void YuvPlayer::play()
 {
-    if (m_timerid) {
-        killTimer(m_timerid);
-    }
     m_timerid = startTimer(1000 / 30);
     m_state = Playing;
 }
@@ -82,11 +68,6 @@ YuvPlayer::State YuvPlayer::getState()
 void YuvPlayer::setYuv(const Yuv &yuv)
 {
     m_yuv = yuv;
-    m_texture = SDL_CreateTexture(m_renderer,
-                                PIXEL_FORMAT_MAP[yuv.pixelFormat],
-                                SDL_TEXTUREACCESS_STREAMING,
-                                yuv.width, yuv.height);
-    RET(!m_texture, SDL_CreateTexture);
 
     // 将YUV的像素数据填充
     m_file.setFileName(yuv.filename);
@@ -102,21 +83,40 @@ void YuvPlayer::timerEvent(QTimerEvent *event)
     int imgSize = av_image_get_buffer_size(m_yuv.pixelFormat, m_yuv.width, m_yuv.height, 1);
     char *data = (char *)malloc(imgSize);
     if (m_file.read(data, imgSize) > 0) {
-        RET(SDL_UpdateTexture(m_texture, nullptr, data, m_yuv.width), SDL_UpdateTexture);
+        RawVideoFrame in = {
+            data,
+            m_yuv.width, m_yuv.height,
+            m_yuv.pixelFormat
+        };
+        RawVideoFrame out = {
+            nullptr,
+            m_yuv.width, m_yuv.height,
+            AV_PIX_FMT_RGB24
+        };
 
-        RET(SDL_SetRenderTarget(m_renderer, nullptr), SDL_SetRenderTarget);
-
-        // 设置绘制颜色（画笔颜色）
-        RET(SDL_SetRenderDrawColor(m_renderer, 255, 0, 0, SDL_ALPHA_OPAQUE), SDL_SetRenderDrawColor);
-
-        // 用绘制颜色（画笔颜色）清除目标
-        RET(SDL_RenderClear(m_renderer), SDL_RenderClear);
-
-        RET(SDL_RenderCopy(m_renderer, m_texture, nullptr, nullptr), SDL_RenderCopy);
-
-        SDL_RenderPresent(m_renderer);
+        FFmpegs::convertRawVideo(in, out);
+        freeCurrentImage();
+        m_currentImage = new QImage((uchar *)out.pixels, out.width, out.height, QImage::Format_RGB888);
+        update();
     } else {
         killTimer(m_timerid);
     }
     delete data;
+}
+
+void YuvPlayer::paintEvent(QPaintEvent *event)
+{
+    Q_UNUSED(event)
+    if (!m_currentImage)
+        return;
+
+    QPainter(this).drawImage(QRect(0, 0, width(), height()), *m_currentImage);
+}
+
+void YuvPlayer::freeCurrentImage()
+{
+    if (m_currentImage) {
+        free(m_currentImage->bits());
+        delete m_currentImage;
+    }
 }

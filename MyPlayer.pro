@@ -51,14 +51,18 @@ LIBS += -L$$PWD/third_party/ffmpeg/lib -lswresample -lswscale -lavcodec -lavform
 LIBS += -L$$SDL_SOURCE_DIR -lSDL2
 
 SOURCES += \
+    ffmpegs.cpp \
     main.cpp \
     mainwindow.cpp \
     play_thread.cpp \
+    play_thread_SDL_YUV_demo.cpp \
     yuv_player.cpp
 
 HEADERS += \
+    ffmpegs.h \
     mainwindow.h \
     play_thread.h \
+    play_thread_SDL_YUV_demo.h \
     yuv_player.h
 
 FORMS += \
