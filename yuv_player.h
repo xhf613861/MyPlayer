@@ -57,6 +57,8 @@ private:
     QFile m_file;
     State m_state = Stopped;
     QImage *m_currentImage = nullptr;
+
+    QRect m_dstRect;
 };
 
 #endif // YUVPLAYER_H

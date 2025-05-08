@@ -25,7 +25,7 @@ MainWindow::MainWindow(QWidget *parent)
 {
     ui->setupUi(this);
     m_player = new YuvPlayer(this);
-    int w = 200;
+    int w = 300;
     int h = 200;
     int x = (width() - w) >> 1;
     int y = (height() - h) >> 1;

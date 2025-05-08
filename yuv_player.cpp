@@ -74,6 +74,30 @@ void YuvPlayer::setYuv(const Yuv &yuv)
     if (!m_file.open(QFile::ReadOnly)) {
         qDebug() << "open error";
     }
+
+    int w = width();
+    int h = height();
+
+    int dx = 0;
+    int dy = 0;
+    int dw = m_yuv.width;
+    int dh = m_yuv.height;
+
+    // 计算目标尺寸
+    if (dw > w || dh > h) {
+        if (dw * h > w *dh) {
+            // 视频宽高比大于播放器
+            dh = w * dh / dw;
+            dw = w;
+        } else {
+            dw = h * dw / dh;
+            dh = h;
+        }
+    }
+
+    dx = (w - dw) >> 1;
+    dy = (h - dh) >> 1;
+    m_dstRect = QRect(dx, dy, dw, dh);
 }
 
 void YuvPlayer::timerEvent(QTimerEvent *event)
@@ -110,7 +134,7 @@ void YuvPlayer::paintEvent(QPaintEvent *event)
     if (!m_currentImage)
         return;
 
-    QPainter(this).drawImage(QRect(0, 0, width(), height()), *m_currentImage);
+    QPainter(this).drawImage(m_dstRect, *m_currentImage);
 }
 
 void YuvPlayer::freeCurrentImage()
