@@ -40,6 +40,13 @@ MainWindow::MainWindow(QWidget *parent)
     };
     m_player->setYuv(yuv);
 
+    connect(m_player, &YuvPlayer::stateChanged, this, [this](){
+        if (m_player->getState() == YuvPlayer::Playing) {
+            ui->pushButton->setText(QStringLiteral("暂停"));
+        } else {
+            ui->pushButton->setText(QStringLiteral("播放"));
+        }
+    });
 }
 
 MainWindow::~MainWindow()
@@ -54,10 +61,8 @@ void MainWindow::on_pushButton_clicked()
 //    play->start();
     if (m_player->isPlaying()) {
         m_player->pause();
-        ui->pushButton->setText(QStringLiteral("播放"));
     } else {
         m_player->play();
-        ui->pushButton->setText(QStringLiteral("暂停"));
     }
 }
 

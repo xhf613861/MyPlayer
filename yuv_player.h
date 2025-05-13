@@ -47,9 +47,12 @@ protected:
     void paintEvent(QPaintEvent *event);
 
 signals:
+    void stateChanged();
 
 private:
     void freeCurrentImage();
+    void setState(State state);
+    void stopTimer();
 
 private:
     Yuv m_yuv;

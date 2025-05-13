@@ -33,26 +33,54 @@ YuvPlayer::~YuvPlayer()
     freeCurrentImage();
 }
 
+void YuvPlayer::setState(YuvPlayer::State state)
+{
+    if (m_state == state)
+        return;
+
+    if (state == Stopped || state == Finished) {
+        m_file.seek(0);
+    }
+
+    m_state = state;
+    emit stateChanged();
+}
+
+void YuvPlayer::stopTimer()
+{
+    if (m_timerid == 0) return;
+
+    killTimer(m_timerid);
+    m_timerid = 0;
+}
+
 void YuvPlayer::play()
 {
+    if (m_state == Playing)
+        return;
+
     m_timerid = startTimer(1000 / 30);
-    m_state = Playing;
+    setState(Playing);
 }
 
 void YuvPlayer::pause()
 {
-    if (m_timerid) {
-        killTimer(m_timerid);
-    }
-    m_state = Paused;
+    if (m_state != Playing)
+        return;
+
+    stopTimer();
+    setState(Paused);
 }
 
 void YuvPlayer::stop()
 {
-    if (m_timerid) {
-        killTimer(m_timerid);
-    }
-    m_state = Stopped;
+    if (m_state == Stopped)
+        return;
+
+    stopTimer();
+    freeCurrentImage();
+    update();
+    setState(Stopped);
 }
 
 bool YuvPlayer::isPlaying()
@@ -123,7 +151,8 @@ void YuvPlayer::timerEvent(QTimerEvent *event)
         m_currentImage = new QImage((uchar *)out.pixels, out.width, out.height, QImage::Format_RGB888);
         update();
     } else {
-        killTimer(m_timerid);
+        stopTimer();
+        setState(Finished);
     }
     delete data;
 }
@@ -142,5 +171,7 @@ void YuvPlayer::freeCurrentImage()
     if (m_currentImage) {
         free(m_currentImage->bits());
         delete m_currentImage;
+        m_currentImage = nullptr;
     }
 }
+
