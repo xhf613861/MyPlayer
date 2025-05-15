@@ -53,13 +53,16 @@ private:
     void freeCurrentImage();
     void setState(State state);
     void stopTimer();
+    void closeFile();
 
 private:
     Yuv m_yuv;
     int m_timerid = 0;
-    QFile m_file;
+    QFile *m_file = nullptr;
     State m_state = Stopped;
     QImage *m_currentImage = nullptr;
+    int m_imgSize = 0;
+    int m_interval = 0;
 
     QRect m_dstRect;
 };

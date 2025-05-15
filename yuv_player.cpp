@@ -29,8 +29,9 @@ YuvPlayer::YuvPlayer(QWidget *parent) : QWidget(parent)
 
 YuvPlayer::~YuvPlayer()
 {
-    m_file.close();
+    closeFile();
     freeCurrentImage();
+    stopTimer();
 }
 
 void YuvPlayer::setState(YuvPlayer::State state)
@@ -39,7 +40,7 @@ void YuvPlayer::setState(YuvPlayer::State state)
         return;
 
     if (state == Stopped || state == Finished) {
-        m_file.seek(0);
+        m_file->seek(0);
     }
 
     m_state = state;
@@ -54,12 +55,21 @@ void YuvPlayer::stopTimer()
     m_timerid = 0;
 }
 
+void YuvPlayer::closeFile()
+{
+    if (!m_file) return;
+
+    m_file->close();
+    delete m_file;
+    m_file = nullptr;
+}
+
 void YuvPlayer::play()
 {
     if (m_state == Playing)
         return;
 
-    m_timerid = startTimer(1000 / 30);
+    m_timerid = startTimer(m_interval);
     setState(Playing);
 }
 
@@ -96,12 +106,17 @@ YuvPlayer::State YuvPlayer::getState()
 void YuvPlayer::setYuv(const Yuv &yuv)
 {
     m_yuv = yuv;
+    closeFile();
 
     // 将YUV的像素数据填充
-    m_file.setFileName(yuv.filename);
-    if (!m_file.open(QFile::ReadOnly)) {
-        qDebug() << "open error";
+    m_file = new QFile(yuv.filename);
+    m_file->setFileName(yuv.filename);
+    if (!m_file->open(QFile::ReadOnly)) {
+        qDebug() << "open error " << yuv.filename;
     }
+
+    m_interval = 1000 / m_yuv.fps;
+    m_imgSize = av_image_get_buffer_size(m_yuv.pixelFormat, m_yuv.width, m_yuv.height, 1);
 
     int w = width();
     int h = height();
@@ -132,9 +147,8 @@ void YuvPlayer::timerEvent(QTimerEvent *event)
 {
     Q_UNUSED(event)
 
-    int imgSize = av_image_get_buffer_size(m_yuv.pixelFormat, m_yuv.width, m_yuv.height, 1);
-    char *data = (char *)malloc(imgSize);
-    if (m_file.read(data, imgSize) > 0) {
+    char *data = (char *)malloc(m_imgSize);
+    if (m_file->read(data, m_imgSize) == m_imgSize) {
         RawVideoFrame in = {
             data,
             m_yuv.width, m_yuv.height,
@@ -142,7 +156,7 @@ void YuvPlayer::timerEvent(QTimerEvent *event)
         };
         RawVideoFrame out = {
             nullptr,
-            m_yuv.width, m_yuv.height,
+            m_yuv.width >> 4 << 4, m_yuv.height >> 4 << 4,
             AV_PIX_FMT_RGB24
         };
 
