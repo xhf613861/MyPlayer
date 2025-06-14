@@ -14,7 +14,7 @@ extern "C" {
 
 
 
-#define FILE_NAME "D:\\video.yuv"
+#define FILE_NAME "C:\\video.yuv"
 #define PIXEL_FORMAT SDL_PIXELFORMAT_YV12
 #define IMG_W 352
 #define IMG_H 288
@@ -22,13 +22,13 @@ extern "C" {
 static int yuvIndex = 0;
 static Yuv Yuvs[] = {
     {
-        "D:\\video.yuv",
+        "C:\\video.yuv",
         IMG_W, IMG_H,
         AV_PIX_FMT_YUV420P,
         30
     },
     {
-        "D:\\test1.yuv",
+        "C:\\test1.yuv",
         IMG_W, IMG_H,
         AV_PIX_FMT_YUV420P,
         30

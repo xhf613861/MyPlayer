@@ -36,6 +36,11 @@ contains(DEFINES, WIN64) {
 }
 SDL_SOURCE_DIR = $$replace(SDL_SOURCE_DIR, '/', '\\')
 
+
+message(11111111)
+message($$SDL_SOURCE_DIR)
+message(22222222)
+
 unix {
     QMAKE_POST_LINK += cp -r $$FFMPEF_SOURCE_DIR $$DESTDIR
 }

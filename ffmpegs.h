@@ -5,19 +5,19 @@ extern "C" {
 #include <libavutil/avutil.h>
 }
 
-typedef struct {
+ struct RawVideoFile{
     const char *filename;
     int width = 0;
     int height = 0;
     AVPixelFormat format;
-} RawVideoFile;
+} ;
 
-typedef struct {
+struct RawVideoFrame{
     char *pixels = nullptr;
     int width = 0;
     int height = 0;
     AVPixelFormat format;
-} RawVideoFrame;
+} ;
 
 class FFmpegs
 {

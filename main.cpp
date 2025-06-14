@@ -1,7 +1,7 @@
 ﻿#include "mainwindow.h"
 
 #include <QApplication>
-#include <QTextCodec>
+// #include <QTextCodec>
 #include <SDL.h>
 #include "ffmpegs.h"
 
